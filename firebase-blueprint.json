@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Account",
+      "description": "User accounts for teachers, students, and admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "student"] },
+        "email": { "type": "string" },
+        "className": { "type": "string" },
+        "nisNip": { "type": "string" },
+        "approved": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "role", "email"]
+    },
+    "reports": {
+      "title": "Life Skill Report",
+      "description": "Weekly life skill reports submitted by students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "className": { "type": "string" },
+        "nis": { "type": "string" },
+        "date": { "type": "string" },
+        "dayName": { "type": "string" },
+        "meeting": { "type": "number" },
+        "title": { "type": "string" },
+        "notes": { "type": "string" },
+        "result": { "type": "string" },
+        "reflection": { "type": "string" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["Belum Dinilai", "Sudah Dinilai"] },
+        "teacherNotes": { "type": "string" },
+        "category": { "type": "string" },
+        "evaluatedBy": { "type": "string" },
+        "evaluatedAt": { "type": "string" },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": { "type": "string" },
+              "userName": { "type": "string" },
+              "action": { "type": "string text" }
+            }
+          }
+        }
+      },
+      "required": ["id", "studentName", "title", "date"]
+    }
+  }
+}

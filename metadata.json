@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Laporan Life Skill",
+  "description": "Sistem pelaporan kegiatan Life Skill siswa SMP Islam Al Azhar 44 dengan login murid & guru, dashboard pemantauan real-time, ekspor PDF & Excel, dan pelacakan riwayat status.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
