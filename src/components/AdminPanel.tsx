@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserRole, UserStatus } from '../types';
-import { getUsers, saveUsers, deleteUser } from '../services/storage';
+import { getUsers, saveUsers, deleteUser, addUser } from '../services/storage';
+import { ImportUsersModal } from './ImportUsersModal';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -16,7 +17,8 @@ import {
   UserCheck,
   AlertTriangle,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface AdminPanelProps {
@@ -41,6 +43,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
   // Reset Password State
   const [userToResetPassword, setUserToResetPassword] = useState<User | null>(null);
   const [resetPasswordValue, setResetPasswordValue] = useState('');
+
+  // Import Modal State
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Add User Form State
   const [showAddForm, setShowAddForm] = useState(false);
@@ -187,8 +192,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
       password: addPassword.trim() || ''
     };
 
-    const updated = [...users, newUser];
-    saveUsers(updated);
+    const updated = addUser(newUser);
     setUsers(updated);
 
     onShowToast('Akun Berhasil Ditambahkan', `Akun ${newUser.name} telah dibuat dan langsung disetujui (Approved).`, 'success');
@@ -197,6 +201,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
     setAddName('');
     setAddEmail('');
     setAddNisNip('');
+    setAddPassword('');
     setShowAddForm(false);
   };
 
@@ -240,11 +245,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
 
           <div className="flex flex-wrap gap-2.5">
             <button
+              onClick={() => setShowImportModal(true)}
+              className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+              <span>Import Data Akun (CSV)</span>
+            </button>
+            <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="px-4 py-2.5 rounded-xl bg-white text-[#831843] hover:bg-pink-50 text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
             >
               <UserPlus className="w-4 h-4 text-[#be185d]" />
-              {showAddForm ? 'Tutup Form Tambah' : 'Tambah Akun Baru (Langsung Disetujui)'}
+              {showAddForm ? 'Tutup Form Tambah' : 'Tambah Akun Baru (Manual)'}
             </button>
           </div>
         </div>
@@ -521,11 +533,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
 
       {/* Database Users Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
             <Users className="w-4 h-4 text-[#005da8]" />
             Daftar Seluruh Akun Pengguna ({filteredUsers.length})
           </h3>
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Upload File CSV</span>
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -763,6 +782,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
           </div>
         </div>
       )}
+      {/* Import Users CSV Modal */}
+      <ImportUsersModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={(updatedUsers) => {
+          setUsers(updatedUsers);
+        }}
+        onShowToast={onShowToast}
+      />
     </div>
   );
 };
