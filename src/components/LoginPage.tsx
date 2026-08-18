@@ -85,8 +85,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             onError={() => setBgImageError(true)}
             className="w-full h-full object-cover object-center filter brightness-[0.35] contrast-105 scale-105 transform transition-all duration-700"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-900/60"></div>
+        </div>
       )}
-
 
       {/* Header Banner */}
       <header className="pt-8 px-4 sm:px-8 text-center relative z-10">
