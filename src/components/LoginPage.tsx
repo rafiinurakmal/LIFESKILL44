@@ -85,13 +85,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             onError={() => setBgImageError(true)}
             className="w-full h-full object-cover object-center filter brightness-[0.35] contrast-105 scale-105 transform transition-all duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-900/60"></div>
-        </div>
       )}
 
-      {/* Background Glow Ornaments (Fallback/Decoration) */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#be185d]/20 rounded-full blur-[120px] pointer-events-none -translate-y-1/2"></div>
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-emerald-600/15 rounded-full blur-[120px] pointer-events-none translate-y-1/2"></div>
 
       {/* Header Banner */}
       <header className="pt-8 px-4 sm:px-8 text-center relative z-10">
