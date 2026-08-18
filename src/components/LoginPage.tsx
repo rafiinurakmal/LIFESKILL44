@@ -75,36 +75,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-800 font-sans flex flex-col justify-between relative overflow-hidden selection:bg-[#be185d] selection:text-white">
-      {/* Real Background Image Overlay (If available at /images/login-bg.jpg or custom URL) */}
+    <div className="min-h-screen bg-slate-900 text-slate-800 font-sans flex flex-col justify-between relative overflow-hidden selection:bg-[#be185d] selection:text-white">
+      {/* Real Background Image Overlay - Pure original photo */}
       {!bgImageError && bgImageUrl && (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img
             src={bgImageUrl}
             alt="Background Sekolah SMPIA 44"
             onError={() => setBgImageError(true)}
-            className="w-full h-full object-cover object-center filter brightness-[0.35] contrast-105 scale-105 transform transition-all duration-700"
+            className="w-full h-full object-cover object-center transform transition-all duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-900/60"></div>
         </div>
       )}
 
       {/* Header Banner */}
       <header className="pt-8 px-4 sm:px-8 text-center relative z-10">
-        <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 shadow-xl mb-3">
+        <div className="inline-flex items-center gap-3 bg-slate-950/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/20 shadow-xl mb-3">
           <YpiLogo className="w-10 h-10 object-contain drop-shadow" />
           <div className="w-px h-8 bg-white/20"></div>
           <YwLogo className="w-10 h-10 object-contain drop-shadow" />
           <div className="text-left pl-1">
-            <h1 className="text-base font-black text-white leading-none tracking-tight">
+            <h1 className="text-base font-black text-white leading-none tracking-tight drop-shadow-md">
               SMP ISLAM AL AZHAR 44
             </h1>
-            <p className="text-[11px] font-semibold text-pink-200 mt-0.5">
+            <p className="text-[11px] font-semibold text-pink-200 mt-0.5 drop-shadow-sm">
               Grand Wisata • Bekasi
             </p>
           </div>
         </div>
-        <p className="text-xs sm:text-sm font-medium text-slate-200 max-w-md mx-auto drop-shadow-sm">
+        <p className="text-xs sm:text-sm font-medium text-white max-w-md mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
           Sistem Pelaporan & Penilaian <span className="text-pink-300 font-bold">Life Skill</span>
         </p>
       </header>
@@ -187,7 +186,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div className="pt-3 border-t border-slate-100 text-center">
                 <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 bg-slate-100/80 px-3 py-1.5 rounded-xl border border-slate-200/60">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#be185d]" />
-                  <span>Pendaftaran akun dikelola langsung oleh Admin Sekolah</span>
+                  <span>Pendaftaran akun dikelola oleh Admin Sekolah</span>
                 </div>
               </div>
             </form>
@@ -196,7 +195,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       </main>
 
       {/* Footer */}
-      <footer className="pb-6 px-4 text-center text-xs text-slate-400 relative z-10">
+      <footer className="pb-6 px-4 text-center text-xs text-white/80 font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] relative z-10">
         © {new Date().getFullYear()} SMP Islam Al Azhar 44 Grand Wisata
       </footer>
     </div>
