@@ -45,33 +45,24 @@ export function getUsers(): User[] {
       return INITIAL_USERS;
     }
     const parsed: User[] = JSON.parse(data);
-    let needsUpdate = false;
     
     // Ensure admin user exists
     const hasAdmin = parsed.some(u => u.role === 'admin' || u.id === 'u_admin_1');
     if (!hasAdmin) {
       parsed.unshift(INITIAL_USERS[0]);
-      needsUpdate = true;
     }
 
     const sanitized = parsed.map(u => {
-      let changed = false;
       let newU = { ...u };
       if (!newU.status) {
         newU.status = 'approved' as const;
-        changed = true;
       }
       if (!newU.password) {
         newU.password = '123456';
-        changed = true;
       }
-      if (changed) needsUpdate = true;
       return newU;
     });
 
-    if (needsUpdate) {
-      saveUsers(sanitized);
-    }
     return sanitized;
   } catch {
     return INITIAL_USERS;
@@ -83,6 +74,53 @@ export function saveUsers(users: User[]): void {
   users.forEach(u => {
     saveUserToFirestore(u);
   });
+}
+
+export function addUser(newUser: User): User[] {
+  const current = getUsers();
+  // Filter out any duplicate with same ID or Email
+  const filtered = current.filter(u => u.id !== newUser.id && u.email.toLowerCase() !== newUser.email.toLowerCase());
+  const updated = [...filtered, newUser];
+  saveUsers(updated);
+  return updated;
+}
+
+export function addUsersBatch(newUsers: User[]): { updatedUsers: User[]; addedCount: number; updatedCount: number } {
+  const current = getUsers();
+  const userMap = new Map<string, User>();
+  
+  // Seed existing users by email lowercased
+  current.forEach(u => {
+    userMap.set(u.email.toLowerCase(), u);
+  });
+
+  let addedCount = 0;
+  let updatedCount = 0;
+
+  newUsers.forEach(newUser => {
+    const key = newUser.email.toLowerCase();
+    if (userMap.has(key)) {
+      // Merge/update
+      const existing = userMap.get(key)!;
+      userMap.set(key, {
+        ...existing,
+        name: newUser.name || existing.name,
+        role: newUser.role || existing.role,
+        className: newUser.className || existing.className,
+        nisNip: newUser.nisNip || existing.nisNip,
+        status: newUser.status || existing.status || 'approved',
+        password: newUser.password || existing.password || '123456'
+      });
+      updatedCount++;
+    } else {
+      userMap.set(key, newUser);
+      addedCount++;
+    }
+  });
+
+  const updatedUsers = Array.from(userMap.values());
+  saveUsers(updatedUsers);
+  return { updatedUsers, addedCount, updatedCount };
 }
 
 export function deleteUser(userId: string): void {
