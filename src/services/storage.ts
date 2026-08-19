@@ -5,6 +5,7 @@ import {
   updateReportInFirestore,
   deleteReportFromFirestore,
   saveUserToFirestore,
+  saveUsersBatchToFirestore,
   deleteUserFromFirestore
 } from '../lib/firebase';
 
@@ -71,9 +72,7 @@ export function getUsers(): User[] {
 
 export function saveUsers(users: User[]): void {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  users.forEach(u => {
-    saveUserToFirestore(u);
-  });
+  saveUsersBatchToFirestore(users);
 }
 
 export function addUser(newUser: User): User[] {
@@ -81,7 +80,8 @@ export function addUser(newUser: User): User[] {
   // Filter out any duplicate with same ID or Email
   const filtered = current.filter(u => u.id !== newUser.id && u.email.toLowerCase() !== newUser.email.toLowerCase());
   const updated = [...filtered, newUser];
-  saveUsers(updated);
+  localStorage.setItem(USERS_KEY, JSON.stringify(updated));
+  saveUserToFirestore(newUser);
   return updated;
 }
 
@@ -96,13 +96,14 @@ export function addUsersBatch(newUsers: User[]): { updatedUsers: User[]; addedCo
 
   let addedCount = 0;
   let updatedCount = 0;
+  const changedUsers: User[] = [];
 
   newUsers.forEach(newUser => {
     const key = newUser.email.toLowerCase();
     if (userMap.has(key)) {
       // Merge/update
       const existing = userMap.get(key)!;
-      userMap.set(key, {
+      const mergedUser: User = {
         ...existing,
         name: newUser.name || existing.name,
         role: newUser.role || existing.role,
@@ -110,16 +111,20 @@ export function addUsersBatch(newUsers: User[]): { updatedUsers: User[]; addedCo
         nisNip: newUser.nisNip || existing.nisNip,
         status: newUser.status || existing.status || 'approved',
         password: newUser.password || existing.password || '123456'
-      });
+      };
+      userMap.set(key, mergedUser);
+      changedUsers.push(mergedUser);
       updatedCount++;
     } else {
       userMap.set(key, newUser);
+      changedUsers.push(newUser);
       addedCount++;
     }
   });
 
   const updatedUsers = Array.from(userMap.values());
-  saveUsers(updatedUsers);
+  localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+  saveUsersBatchToFirestore(changedUsers);
   return { updatedUsers, addedCount, updatedCount };
 }
 
