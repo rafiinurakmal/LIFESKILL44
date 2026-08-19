@@ -8,6 +8,7 @@ import {
   updateDoc,
   deleteDoc,
   getDocs,
+  writeBatch,
   query,
   orderBy
 } from 'firebase/firestore';
@@ -62,15 +63,16 @@ export function subscribeToUsers(onUpdate: (users: User[]) => void) {
         users.push(docSnap.data() as User);
       });
 
-      if (users.length === 0) {
+      if (users.length === 0 && snapshot.metadata.fromCache === false) {
         onUpdate(INITIAL_USERS);
         seedInitialDataIfNeeded();
-      } else {
+      } else if (users.length > 0) {
         onUpdate(users);
       }
     },
     (error) => {
-      console.error('Firestore users snapshot error:', error);
+      // Gracefully handle network offline / unavailable errors
+      console.warn('Firestore users offline / sync notice:', error.message || error);
     }
   );
 }
@@ -91,16 +93,30 @@ export function subscribeToReports(onUpdate: (reports: Report[]) => void) {
       // Sort reports by date/id descending
       reports.sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
 
-      onUpdate(reports);
-
-      if (snapshot.empty) {
+      if (reports.length > 0) {
+        onUpdate(reports);
+      } else if (snapshot.metadata.fromCache === false) {
         seedInitialDataIfNeeded();
       }
     },
     (error) => {
-      console.error('Firestore reports snapshot error:', error);
+      // Gracefully handle network offline / unavailable errors
+      console.warn('Firestore reports offline / sync notice:', error.message || error);
     }
   );
+}
+
+/**
+ * Clean object so that any undefined fields are removed (Firestore does not support undefined values)
+ */
+function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const clean: Record<string, any> = {};
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] !== undefined) {
+      clean[key] = obj[key];
+    }
+  });
+  return clean;
 }
 
 /**
@@ -108,9 +124,34 @@ export function subscribeToReports(onUpdate: (reports: Report[]) => void) {
  */
 export async function saveUserToFirestore(user: User) {
   try {
-    await setDoc(doc(db, USERS_COLLECTION, user.id), user, { merge: true });
+    const cleanUser = sanitizeForFirestore(user);
+    await setDoc(doc(db, USERS_COLLECTION, user.id), cleanUser, { merge: true });
+    console.log('User saved to Firestore successfully:', user.id, user.name);
   } catch (err) {
     console.error('Error saving user to Firestore:', err);
+  }
+}
+
+/**
+ * Save batch of users to Firestore efficiently (using writeBatch chunks up to 450 per batch)
+ */
+export async function saveUsersBatchToFirestore(usersList: User[]) {
+  try {
+    if (!usersList || usersList.length === 0) return;
+    const CHUNK_SIZE = 400; // Firestore limit is 500 operations per batch
+    for (let i = 0; i < usersList.length; i += CHUNK_SIZE) {
+      const chunk = usersList.slice(i, i + CHUNK_SIZE);
+      const batch = writeBatch(db);
+      chunk.forEach(u => {
+        const clean = sanitizeForFirestore(u);
+        const docRef = doc(db, USERS_COLLECTION, u.id);
+        batch.set(docRef, clean, { merge: true });
+      });
+      await batch.commit();
+    }
+    console.log(`Successfully batch-saved ${usersList.length} users to Firestore.`);
+  } catch (err) {
+    console.error('Error batch saving users to Firestore:', err);
   }
 }
 
@@ -130,7 +171,8 @@ export async function deleteUserFromFirestore(userId: string) {
  */
 export async function addReportToFirestore(report: Report) {
   try {
-    await setDoc(doc(db, REPORTS_COLLECTION, report.id), report);
+    const cleanReport = sanitizeForFirestore(report);
+    await setDoc(doc(db, REPORTS_COLLECTION, report.id), cleanReport);
   } catch (err) {
     console.error('Error adding report to Firestore:', err);
   }
@@ -141,7 +183,8 @@ export async function addReportToFirestore(report: Report) {
  */
 export async function updateReportInFirestore(report: Report) {
   try {
-    await setDoc(doc(db, REPORTS_COLLECTION, report.id), report, { merge: true });
+    const cleanReport = sanitizeForFirestore(report);
+    await setDoc(doc(db, REPORTS_COLLECTION, report.id), cleanReport, { merge: true });
   } catch (err) {
     console.error('Error updating report in Firestore:', err);
   }
