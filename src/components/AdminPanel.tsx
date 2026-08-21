@@ -416,7 +416,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser, users: prop
 
         <div className="bg-white p-4 rounded-2xl border border-blue-200 bg-blue-50/30 shadow-sm">
           <div className="flex items-center justify-between text-blue-800 mb-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Murid vs Guru</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Murid dan Guru</span>
             <GraduationCap className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-lg font-black text-blue-900">{studentCount} Murid / {teacherCount} Guru</div>
